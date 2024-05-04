@@ -60,11 +60,15 @@ object Test : BaseTransformInstructionsPatch<Triple<TwoRegisterInstruction, Int,
             """,
             )
         } else {
+            if (mutableMethod.name == "v") return
+
             mutableMethod.addInstructions(
-                entry.second + 1,
+                entry.second,
                 """
-               invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
+                iget-object v${entry.first.registerA}, v${entry.first.registerB}, Lapky;->f:Ljava/lang/String;
+                 invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
                move-result-object v${entry.first.registerA}
+               iput-object v${entry.first.registerA}, v${entry.first.registerB}, Lapky;->f:Ljava/lang/String;
             """,
             )
         }
