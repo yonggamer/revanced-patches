@@ -31,26 +31,43 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
 
-object Test : BaseTransformInstructionsPatch<Pair<TwoRegisterInstruction, Int>>() {
+object Test : BaseTransformInstructionsPatch<Triple<TwoRegisterInstruction, Int, Boolean>>() {
     override fun filterMap(
         classDef: ClassDef,
         method: Method,
         instruction: Instruction,
         instructionIndex: Int,
-    ): Pair<TwoRegisterInstruction, Int>? {
-        if (instruction.opcode != Opcode.IGET_OBJECT) return null
-        if (instruction.getReference<FieldReference>().toString() != "Lapky;->f:Ljava/lang/String;") return null
-        return (instruction as TwoRegisterInstruction) to instructionIndex
+    ): Triple<TwoRegisterInstruction, Int, Boolean>? {
+        if (instruction.opcode == Opcode.IGET_OBJECT || instruction.opcode == Opcode.IPUT_OBJECT) {
+            if (instruction.getReference<FieldReference>().toString() != "Lapky;->f:Ljava/lang/String;") return null
+
+            return Triple(
+                instruction as TwoRegisterInstruction,
+                instructionIndex,
+                instruction.opcode == Opcode.IPUT_OBJECT,
+            )
+        }
+        return null
     }
 
-    override fun transform(mutableMethod: MutableMethod, entry: Pair<TwoRegisterInstruction, Int>) {
-        mutableMethod.addInstructions(
-            entry.second + 1,
-            """
+    override fun transform(mutableMethod: MutableMethod, entry: Triple<TwoRegisterInstruction, Int, Boolean>) {
+        if (entry.third) {
+            mutableMethod.addInstructions(
+                entry.second,
+                """
                invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
                move-result-object v${entry.first.registerA}
             """,
-        )
+            )
+        } else {
+            mutableMethod.addInstructions(
+                entry.second + 1,
+                """
+               invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
+               move-result-object v${entry.first.registerA}
+            """,
+            )
+        }
     }
 }
 
