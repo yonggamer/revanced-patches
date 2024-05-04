@@ -674,6 +674,14 @@ public abstract class app/revanced/patches/shared/misc/gms/BaseGmsCoreSupportRes
 	protected final fun getGmsCoreVendorGroupId ()Ljava/lang/String;
 }
 
+public final class app/revanced/patches/shared/misc/gms/Test : app/revanced/patches/all/misc/transformation/BaseTransformInstructionsPatch {
+	public static final field INSTANCE Lapp/revanced/patches/shared/misc/gms/Test;
+	public synthetic fun filterMap (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Ljava/lang/Object;
+	public fun filterMap (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Lkotlin/Pair;
+	public synthetic fun transform (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;Ljava/lang/Object;)V
+	public fun transform (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;Lkotlin/Pair;)V
+}
+
 public abstract class app/revanced/patches/shared/misc/hex/BaseHexPatch : app/revanced/patcher/patch/RawResourcePatch {
 	public fun <init> ()V
 	public synthetic fun execute (Lapp/revanced/patcher/data/Context;)V
