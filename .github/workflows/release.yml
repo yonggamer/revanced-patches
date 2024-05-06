@@ -41,4 +41,3 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: revanced-patches
-          path: revanced-patches
