@@ -7,7 +7,9 @@ import app.revanced.patcher.extensions.InstructionExtensions.getInstructions
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.fingerprint.MethodFingerprint
 import app.revanced.patcher.patch.BytecodePatch
+import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patches.all.misc.packagename.ChangePackageNamePatch
+import app.revanced.patches.all.misc.transformation.BaseTransformInstructionsPatch
 import app.revanced.patches.shared.misc.gms.BaseGmsCoreSupportPatch.Constants.ACTIONS
 import app.revanced.patches.shared.misc.gms.BaseGmsCoreSupportPatch.Constants.AUTHORITIES
 import app.revanced.patches.shared.misc.gms.BaseGmsCoreSupportPatch.Constants.PERMISSIONS
@@ -18,11 +20,60 @@ import app.revanced.util.getReference
 import app.revanced.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction21c
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction21c
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 import com.android.tools.smali.dexlib2.util.MethodUtil
+
+object Test : BaseTransformInstructionsPatch<Triple<TwoRegisterInstruction, Int, Boolean>>() {
+    override fun filterMap(
+        classDef: ClassDef,
+        method: Method,
+        instruction: Instruction,
+        instructionIndex: Int,
+    ): Triple<TwoRegisterInstruction, Int, Boolean>? {
+        if (instruction.opcode == Opcode.IGET_OBJECT || instruction.opcode == Opcode.IPUT_OBJECT) {
+            if (instruction.getReference<FieldReference>().toString() != "Lapky;->f:Ljava/lang/String;") return null
+
+            return Triple(
+                instruction as TwoRegisterInstruction,
+                instructionIndex,
+                instruction.opcode == Opcode.IPUT_OBJECT,
+            )
+        }
+        return null
+    }
+
+    override fun transform(mutableMethod: MutableMethod, entry: Triple<TwoRegisterInstruction, Int, Boolean>) {
+        if (entry.third) {
+            mutableMethod.addInstructions(
+                entry.second,
+                """
+               invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
+               move-result-object v${entry.first.registerA}
+            """,
+            )
+        } else {
+            if (mutableMethod.name == "v") return
+
+            mutableMethod.addInstructions(
+                entry.second,
+                """
+                iget-object v${entry.first.registerA}, v${entry.first.registerB}, Lapky;->f:Ljava/lang/String;
+                 invoke-static { v${entry.first.registerA} }, Lapp/revanced/Test;->hook(Ljava/lang/String;)Ljava/lang/String;
+               move-result-object v${entry.first.registerA}
+               iput-object v${entry.first.registerA}, v${entry.first.registerB}, Lapky;->f:Ljava/lang/String;
+            """,
+            )
+        }
+    }
+}
 
 /**
  * A patch that allows patched Google apps to run without root and under a different package name
@@ -58,6 +109,7 @@ abstract class BaseGmsCoreSupportPatch(
         ChangePackageNamePatch::class,
         gmsCoreSupportResourcePatch::class,
         integrationsPatchDependency,
+        Test::class,
     ) + dependencies,
     compatiblePackages = compatiblePackages,
     fingerprints = setOf(

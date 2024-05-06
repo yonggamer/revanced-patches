@@ -30,6 +30,7 @@ public final class app/revanced/patches/all/misc/debugging/EnableAndroidDebuggin
 
 public final class app/revanced/patches/all/misc/hex/HexPatch : app/revanced/patches/shared/misc/hex/BaseHexPatch {
 	public fun <init> ()V
+	public fun getReplacements ()Ljava/util/List;
 }
 
 public final class app/revanced/patches/all/misc/network/OverrideCertificatePinningPatch : app/revanced/patcher/patch/ResourcePatch {
@@ -673,10 +674,19 @@ public abstract class app/revanced/patches/shared/misc/gms/BaseGmsCoreSupportRes
 	protected final fun getGmsCoreVendorGroupId ()Ljava/lang/String;
 }
 
+public final class app/revanced/patches/shared/misc/gms/Test : app/revanced/patches/all/misc/transformation/BaseTransformInstructionsPatch {
+	public static final field INSTANCE Lapp/revanced/patches/shared/misc/gms/Test;
+	public synthetic fun filterMap (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Ljava/lang/Object;
+	public fun filterMap (Lcom/android/tools/smali/dexlib2/iface/ClassDef;Lcom/android/tools/smali/dexlib2/iface/Method;Lcom/android/tools/smali/dexlib2/iface/instruction/Instruction;I)Lkotlin/Triple;
+	public synthetic fun transform (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;Ljava/lang/Object;)V
+	public fun transform (Lapp/revanced/patcher/util/proxy/mutableTypes/MutableMethod;Lkotlin/Triple;)V
+}
+
 public abstract class app/revanced/patches/shared/misc/hex/BaseHexPatch : app/revanced/patcher/patch/RawResourcePatch {
 	public fun <init> ()V
 	public synthetic fun execute (Lapp/revanced/patcher/data/Context;)V
 	public fun execute (Lapp/revanced/patcher/data/ResourceContext;)V
+	public abstract fun getReplacements ()Ljava/util/List;
 }
 
 public final class app/revanced/patches/shared/misc/hex/BaseHexPatch$Replacement {
@@ -1056,6 +1066,12 @@ public final class app/revanced/patches/tudortmund/lockscreen/patch/ShowOnLocksc
 
 public final class app/revanced/patches/tumblr/ads/DisableDashboardAds : app/revanced/patcher/patch/BytecodePatch {
 	public static final field INSTANCE Lapp/revanced/patches/tumblr/ads/DisableDashboardAds;
+	public fun execute (Lapp/revanced/patcher/data/BytecodeContext;)V
+	public synthetic fun execute (Lapp/revanced/patcher/data/Context;)V
+}
+
+public final class app/revanced/patches/tumblr/annoyances/adfree/DisableAdFreeBannerPatch : app/revanced/patcher/patch/BytecodePatch {
+	public static final field INSTANCE Lapp/revanced/patches/tumblr/annoyances/adfree/DisableAdFreeBannerPatch;
 	public fun execute (Lapp/revanced/patcher/data/BytecodeContext;)V
 	public synthetic fun execute (Lapp/revanced/patcher/data/Context;)V
 }
