@@ -67,7 +67,7 @@ val changeHeaderPatch = resourcePatch(
             
             ${targetResourceDirectoryNames.keys.joinToString("\n") { "- $it" }}
             
-            Each of the folders must contain all of the following files:
+            One of the folders must contain all of the following files:
             
             ${variants.joinToString("\n") { variant -> "- ${HEADER_FILE_NAME}_$variant.png" }}
 
@@ -130,7 +130,22 @@ val changeHeaderPatch = resourcePatch(
             val sourceFolders = File(header!!).listFiles { file -> file.isDirectory }
                 ?: throw PatchException("The provided path is not a directory: $header")
 
-            var copiedFiles = false
+            var validFolderFound = false
+
+            // Ensure at least one folder contains all required files
+            sourceFolders.forEach { dpiSourceFolder ->
+                val imgSourceFiles = dpiSourceFolder.listFiles { file -> file.isFile }!!.map { it.name }
+                val requiredFiles = variants.map { variant -> "${HEADER_FILE_NAME}_$variant.png" }
+
+                if (requiredFiles.all { it in imgSourceFiles }) {
+                    validFolderFound = true
+                    return@forEach
+                }
+            }
+
+            if (!validFolderFound) {
+                throw PatchException("No folder contains all required header files: $header")
+            }
 
             // For each source folder, copy the files to the target resource directories.
             sourceFolders.forEach { dpiSourceFolder ->
@@ -141,13 +156,7 @@ val changeHeaderPatch = resourcePatch(
                 imgSourceFiles.forEach { imgSourceFile ->
                     val imgTargetFile = targetDpiFolder.resolve(imgSourceFile.name)
                     imgSourceFile.copyTo(imgTargetFile, true)
-
-                    copiedFiles = true
                 }
-            }
-
-            if (!copiedFiles) {
-                throw PatchException("No header files were copied from the provided path: $header.")
             }
 
             // Overwrite the premium with the custom header as well.
