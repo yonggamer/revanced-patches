@@ -74,7 +74,7 @@ val changeHeaderPatch = resourcePatch(
             The image dimensions must be as follows:
             ${targetResourceDirectoryNames.map { (dpi, dim) -> "- $dpi: $dim" }.joinToString("\n")}
         """.trimIndentMultiline(),
-        required = true,
+        required = false,
     )
 
     execute {
